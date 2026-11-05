@@ -1,6 +1,6 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param(
-    [string]$JdkHome = 'C:\Program Files\Eclipse Adoptium\jdk-17',
+    [string]$JdkHome = 'C:\Program Files\Eclipse Adoptium\jdk-17.0.21.9-hotspot',
     [string]$SdkRoot = 'C:\Android\sdk',
     [switch]$CheckToolsOnly
 )
