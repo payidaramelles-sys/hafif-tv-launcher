@@ -1,4 +1,4 @@
-﻿# Hafif TV
+# Hafif TV
 
 950 MB RAM'li bir Android TV projeksiyon cihazı için yazılmış, **tek Activity'li, sıfır bağımlılıklı** ana ekran (launcher).
 
