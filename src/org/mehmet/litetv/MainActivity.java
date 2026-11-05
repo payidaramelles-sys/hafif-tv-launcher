@@ -1,4 +1,4 @@
-﻿package org.mehmet.litetv;
+package org.mehmet.litetv;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -141,8 +141,8 @@ public final class MainActivity extends Activity {
         applyWallpaper();
         LinearLayout header = new LinearLayout(this); header.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout brand = new LinearLayout(this); brand.setOrientation(LinearLayout.VERTICAL);
-        brand.addView(text("HAFÄ°F TV", 20, 0xff65dfce));
-        brand.addView(text("home".equals(target) ? "Sadece ihtiyacÄ±n olan." : titleFor(target), 17, 0xffa4b5c9));
+        brand.addView(text("HAFİF TV", 20, 0xff65dfce));
+        brand.addView(text("home".equals(target) ? "Sadece ihtiyacın olan." : titleFor(target), 17, 0xffa4b5c9));
         header.addView(brand, new LinearLayout.LayoutParams(0, dp(66), 1));
         LinearLayout timeBox = new LinearLayout(this); timeBox.setOrientation(LinearLayout.VERTICAL);
         TextClock clock = new TextClock(this); clock.setFormat24Hour("HH:mm"); clock.setFormat12Hour("HH:mm");
@@ -162,21 +162,21 @@ public final class MainActivity extends Activity {
         else if ("power".equals(target)) power();
         else if ("slots".equals(target)) slotsScreen();
         else { appScreen(); }
-        String hint = "â†‘ â†“ â† â†’  Gezin    OK  AÃ§    Geri  Ana ekran";
-        if ("home".equals(target)) hint = "â†‘ â†“ â† â†’  Gezin    OK  AÃ§    Kalem simgesi: alt sÄ±rayÄ± dÃ¼zenle    Geri  Ana ekran";
-        if ("slots".equals(target)) hint = "OK  DeÄŸiÅŸtir veya kaldÄ±r    Geri  Ana ekran";
-        if ("apps".equals(target)) hint = "â†‘ â†“ â† â†’  Gezin    OK  AÃ§    Uzun OK  Uygulama seÃ§enekleri    Geri  Ana ekran";
+        String hint = "↑ ↓ ← →  Gezin    OK  Aç    Geri  Ana ekran";
+        if ("home".equals(target)) hint = "↑ ↓ ← →  Gezin    OK  Aç    Kalem simgesi: alt sırayı düzenle    Geri  Ana ekran";
+        if ("slots".equals(target)) hint = "OK  Değiştir veya kaldır    Geri  Ana ekran";
+        if ("apps".equals(target)) hint = "↑ ↓ ← →  Gezin    OK  Aç    Uzun OK  Uygulama seçenekleri    Geri  Ana ekran";
         TextView help = text(hint, 14, 0xffa4b5c9);
         help.setPadding(0, dp(8), 0, 0); root.addView(help);
         setContentView(root); if (initialFocus != null) initialFocus.requestFocus();
         Log.i(TAG, "screen:" + target);
     }
     private String titleFor(String value) {
-        if ("settings".equals(value)) return "Ayarlar ve baÄŸlantÄ±lar";
-        if ("projection".equals(value)) return "Projeksiyon ve gÃ¶rÃ¼ntÃ¼";
-        if ("power".equals(value)) return "GÃ¼Ã§ ve zamanlayÄ±cÄ±";
-        if ("slots".equals(value)) return "Alt sÄ±rayÄ± dÃ¼zenle";
-        return "TÃ¼m uygulamalar";
+        if ("settings".equals(value)) return "Ayarlar ve bağlantılar";
+        if ("projection".equals(value)) return "Projeksiyon ve görüntü";
+        if ("power".equals(value)) return "Güç ve zamanlayıcı";
+        if ("slots".equals(value)) return "Alt sırayı düzenle";
+        return "Tüm uygulamalar";
     }
     private void row(String[] names, Runnable[] actions) {
         LinearLayout r = new LinearLayout(this); r.setPadding(0, dp(7), 0, dp(3));
@@ -193,7 +193,7 @@ public final class MainActivity extends Activity {
         int tileWidth = (width - gap * 4) / 3;
         LinearLayout row = new LinearLayout(this);
         View[] tiles = {
-            tile("GiriÅŸ / HDMI", glyph(0, dp(62)), () -> hdmi()),
+            tile("Giriş / HDMI", glyph(0, dp(62)), () -> hdmi()),
             tile("Kablosuz Ekran", glyph(1, dp(62)), () -> openAny("com.htc.samescreen", "com.softwinner.miracastReceiver")),
             tile("Dosyalar", glyph(2, dp(62), 0xff4c9aff), () -> openAny("com.alphainventor.filemanager"))};
         for (int i = 0; i < tiles.length; i++) {
@@ -299,23 +299,23 @@ public final class MainActivity extends Activity {
     }
     private void pickSlot(int index) {
         String[] names = new String[apps.size() + 1];
-        names[0] = "BoÅŸ bÄ±rak";
+        names[0] = "Boş bırak";
         for (int i = 0; i < apps.size(); i++) names[i + 1] = apps.get(i).label;
-        popup(new AlertDialog.Builder(this).setTitle("YuvarlaÄŸa uygulama koy").setItems(names, (d, n) -> {
+        popup(new AlertDialog.Builder(this).setTitle("Yuvarlağa uygulama koy").setItems(names, (d, n) -> {
             prefs.edit().putString("slot" + index, n == 0 ? "" : apps.get(n - 1).key).apply();
             show("home");
         }).create());
     }
     private String slotLabel(int index) {
         String key = prefs.getString("slot" + index, null);
-        if (key == null) return index == 0 ? "TV Bro" : index == 1 ? "Aptoide TV" : "BoÅŸ";
-        if (key.isEmpty()) return "BoÅŸ";
+        if (key == null) return index == 0 ? "TV Bro" : index == 1 ? "Aptoide TV" : "Boş";
+        if (key.isEmpty()) return "Boş";
         for (App a : apps) if (a.key.equals(key)) return a.label;
         ComponentName cn = ComponentName.unflattenFromString(key);
-        return cn == null ? "BoÅŸ" : cn.getPackageName();
+        return cn == null ? "Boş" : cn.getPackageName();
     }
     private void slotsScreen() {
-        content.addView(text("BeÅŸ yuvarlaÄŸÄ± buradan dÃ¼zenle. KaldÄ±rmak iÃ§in â€œBoÅŸ bÄ±rakâ€Ä± seÃ§.", 16, 0xffa4b5c9));
+        content.addView(text("Beş yuvarlağı buradan düzenle. Kaldırmak için “Boş bırak”ı seç.", 16, 0xffa4b5c9));
         for (int i = 0; i < 5; i++) {
             final int index = i;
             LinearLayout r = new LinearLayout(this); r.setPadding(0, dp(4), 0, dp(2));
@@ -325,7 +325,7 @@ public final class MainActivity extends Activity {
             content.addView(r);
         }
         LinearLayout r = new LinearLayout(this); r.setPadding(0, dp(8), 0, dp(2));
-        Button clear = button("TÃ¼mÃ¼nÃ¼ temizle", () -> {
+        Button clear = button("Tümünü temizle", () -> {
             prefs.edit().putString("slot0", "").putString("slot1", "").putString("slot2", "").putString("slot3", "").putString("slot4", "").apply();
             show("slots");
         });
@@ -341,7 +341,7 @@ public final class MainActivity extends Activity {
     }
     private void launchComponent(String key) {
         ComponentName cn = ComponentName.unflattenFromString(key);
-        if (cn == null || !launch(new Intent(Intent.ACTION_MAIN).setComponent(cn))) toast("Bu kÄ±sayol artÄ±k aÃ§Ä±lamÄ±yor.");
+        if (cn == null || !launch(new Intent(Intent.ACTION_MAIN).setComponent(cn))) toast("Bu kısayol artık açılamıyor.");
     }
     private Drawable glyph(int kind, int size) { return glyph(kind, size, 0xffe2edf9); }
     private Drawable glyph(int kind, int size, int color) {
@@ -470,7 +470,7 @@ public final class MainActivity extends Activity {
             public long getItemId(int n) { return n; }
             public View getView(int pos, View recycled, ViewGroup parent) {
                 TextView t = recycled instanceof TextView ? (TextView)recycled : text("", 18, INK);
-                App a = visible.get(pos); t.setText((favorites.contains(a.key) ? "â˜…  " : "") + a.label);
+                App a = visible.get(pos); t.setText((favorites.contains(a.key) ? "★  " : "") + a.label);
                 t.setContentDescription(a.label); t.setGravity(Gravity.CENTER); t.setMaxLines(2);
                 t.setPadding(dp(9), dp(10), dp(9), dp(8)); t.setBackground(focusBackground());
                 t.setCompoundDrawablePadding(dp(5)); t.setCompoundDrawables(null, icon(a), null, null);
@@ -478,8 +478,8 @@ public final class MainActivity extends Activity {
                 t.setFocusable(false); return t;
             }
         });
-        if ("favorites".equals(mode) && visible.isEmpty()) toast("HenÃ¼z favori yok. Favori dÃ¼zenle ile bir uygulama seÃ§in.");
-        if ("edit".equals(mode)) toast("OK ile favoriye ekle / Ã§Ä±kar.");
+        if ("favorites".equals(mode) && visible.isEmpty()) toast("Henüz favori yok. Favori düzenle ile bir uygulama seçin.");
+        if ("edit".equals(mode)) toast("OK ile favoriye ekle / çıkar.");
     }
     private Drawable icon(App a) {
         Drawable d = icons.get(a.key);
@@ -500,7 +500,7 @@ public final class MainActivity extends Activity {
     }
     private void appOptions(App a) {
         popup(new AlertDialog.Builder(this).setTitle(a.label).setItems(new String[]{
-            favorites.contains(a.key) ? "Favorilerden Ã§Ä±kar" : "Favorilere ekle", "Uygulama bilgisi / kaldÄ±r / Ã¶nbellek", "AÃ§"}, (d,n) -> {
+            favorites.contains(a.key) ? "Favorilerden çıkar" : "Favorilere ekle", "Uygulama bilgisi / kaldır / önbellek", "Aç"}, (d,n) -> {
             if (n == 0) toggleFavorite(a);
             else if (n == 1) launch(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + a.info.activityInfo.packageName)));
             else launch(new Intent(Intent.ACTION_MAIN).setComponent(ComponentName.unflattenFromString(a.key)));
@@ -522,35 +522,35 @@ public final class MainActivity extends Activity {
         tvSettings();
     }
     private void settings() {
-        content.addView(note("Buradaki her kÄ±sayol gerÃ§ekten aÃ§Ä±lÄ±r. Ãœreticiye Ã¶zel bÃ¶lÃ¼mlerin tamamÄ± tek yerde: Cihaz ayarlarÄ±."));
-        row(new String[]{"Cihaz ayarlarÄ±", "TV AyarlarÄ±", "AÄŸ / Wi-Fi"}, new Runnable[]{
+        content.addView(note("Buradaki her kısayol gerçekten açılır. Üreticiye özel bölümlerin tamamı tek yerde: Cihaz ayarları."));
+        row(new String[]{"Cihaz ayarları", "TV Ayarları", "Ağ / Wi-Fi"}, new Runnable[]{
             () -> vendor("settings.MainSettingActivity", Settings.ACTION_SETTINGS),
             () -> tvSettings(),
             () -> vendor("settings.NetworkActivity", Settings.ACTION_WIFI_SETTINGS)});
-        row(new String[]{"Bluetooth", "Uygulamalar", "Duvar kaÄŸÄ±dÄ±"}, new Runnable[]{
-            () -> confirmAction("Bluetooth ayarlarÄ±nÄ± aÃ§?", "Ãœreticinin Bluetooth ekranÄ± aÃ§Ä±lÄ±ÅŸta Bluetooth'u etkinleÅŸtirebilir ve tarama baÅŸlatabilir.", () -> vendor("settings.BluetoothActivity", Settings.ACTION_BLUETOOTH_SETTINGS)),
+        row(new String[]{"Bluetooth", "Uygulamalar", "Duvar kağıdı"}, new Runnable[]{
+            () -> confirmAction("Bluetooth ayarlarını aç?", "Üreticinin Bluetooth ekranı açılışta Bluetooth'u etkinleştirebilir ve tarama başlatabilir.", () -> vendor("settings.BluetoothActivity", Settings.ACTION_BLUETOOTH_SETTINGS)),
             () -> { mode = "manage"; show("apps"); },
             () -> wallpaper()});
-        row(new String[]{"Projeksiyon", "GÃ¼Ã§", "KÄ±sayollar"}, new Runnable[]{
+        row(new String[]{"Projeksiyon", "Güç", "Kısayollar"}, new Runnable[]{
             () -> show("projection"),
             () -> show("power"),
             () -> more()});
     }
     private void projection() {
-        content.addView(note("Projeksiyon ayarlarÄ± Ã¼reticide. AÅŸaÄŸÄ±daki iki giriÅŸ gerÃ§ekten aÃ§Ä±lÄ±r:\nEkran ve Ses â†’ odak, gÃ¶rÃ¼ntÃ¼ modu, projeksiyon yÃ¶nÃ¼.\nCihaz ayarlarÄ± â†’ keystone, zoom, aÃ§Ä± kalibrasyonu."));
+        content.addView(note("Projeksiyon ayarları üreticide. Aşağıdaki iki giriş gerçekten açılır:\nEkran ve Ses → odak, görüntü modu, projeksiyon yönü.\nCihaz ayarları → keystone, zoom, açı kalibrasyonu."));
         row(new String[]{"Ekran ve Ses (TV)", "LuminaOS Projeksiyon"}, new Runnable[]{
             () -> displaySound(),
             () -> vendor("settings.MainSettingActivity", Settings.ACTION_DISPLAY_SETTINGS)});
     }
     private void power() {
-        content.addView(note("Dikkat: Ã¼reticinin gÃ¼Ã§ ekranÄ± 15 saniye sonra otomatik kapatabilir.\nGeri ile Ã§Ä±kmak veya odaÄŸÄ± kapanma kutusundan taÅŸÄ±mak sayacÄ± durdurur."));
-        row(new String[]{"GÃ¼Ã§ seÃ§enekleri", "Ana ekran"}, new Runnable[]{
+        content.addView(note("Dikkat: üreticinin güç ekranı 15 saniye sonra otomatik kapatabilir.\nGeri ile çıkmak veya odağı kapanma kutusundan taşımak sayacı durdurur."));
+        row(new String[]{"Güç seçenekleri", "Ana ekran"}, new Runnable[]{
             () -> confirmPower(), () -> show("home")});
     }
     private void confirmPower() {
         AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Cihaz kapanabilir")
-            .setMessage("LuminaOS gÃ¼Ã§ ekranÄ± aÃ§Ä±lÄ±nca 15 sn otomatik kapanma sayacÄ± baÅŸlatÄ±r. Geri ile Ã§Ä±kmak veya odaÄŸÄ± baÅŸka kutuya taÅŸÄ±mak sayacÄ± durdurur. YalnÄ±z gerÃ§ekten kapatmak / yeniden baÅŸlatmak istiyorsanÄ±z devam edin.")
-            .setNegativeButton("VazgeÃ§", null).setPositiveButton("GÃ¼Ã§ ekranÄ±nÄ± aÃ§", (d,n) -> vendor("settings.PowerActivity", Settings.ACTION_SETTINGS)).create();
+            .setMessage("LuminaOS güç ekranı açılınca 15 sn otomatik kapanma sayacı başlatır. Geri ile çıkmak veya odağı başka kutuya taşımak sayacı durdurur. Yalnız gerçekten kapatmak / yeniden başlatmak istiyorsanız devam edin.")
+            .setNegativeButton("Vazgeç", null).setPositiveButton("Güç ekranını aç", (d,n) -> vendor("settings.PowerActivity", Settings.ACTION_SETTINGS)).create();
         dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_NEGATIVE).requestFocus()); popup(dialog);
     }
     private void popup(AlertDialog dialog) {
@@ -561,11 +561,11 @@ public final class MainActivity extends Activity {
     }
     private void confirmAction(String title, String message, Runnable action) {
         AlertDialog d = new AlertDialog.Builder(this).setTitle(title).setMessage(message)
-            .setNegativeButton("VazgeÃ§", null).setPositiveButton("Devam et", (v,n) -> action.run()).create();
+            .setNegativeButton("Vazgeç", null).setPositiveButton("Devam et", (v,n) -> action.run()).create();
         d.setOnShowListener(v -> d.getButton(AlertDialog.BUTTON_NEGATIVE).requestFocus()); popup(d);
     }
     private void more() {
-        popup(new AlertDialog.Builder(this).setTitle("KÄ±sayollar").setItems(new String[]{"Duvar kaÄŸÄ±dÄ± / Tema", "Ekran yansÄ±tma", "Dosyalar / USB", "Uygulama maÄŸazasÄ±"}, (d,n) -> {
+        popup(new AlertDialog.Builder(this).setTitle("Kısayollar").setItems(new String[]{"Duvar kağıdı / Tema", "Ekran yansıtma", "Dosyalar / USB", "Uygulama mağazası"}, (d,n) -> {
             if (n == 0) wallpaper();
             else if (n == 1) openAny("com.htc.samescreen", "com.softwinner.miracastReceiver");
             else if (n == 2) openAny("com.alphainventor.filemanager");
@@ -573,11 +573,11 @@ public final class MainActivity extends Activity {
         }).create());
     }
     private void wallpaper() {
-        popup(new AlertDialog.Builder(this).setTitle("Duvar kaÄŸÄ±dÄ± / Tema").setItems(new String[]{"Gece", "Okyanus", "Orman", "Dosya / USB'den resim seÃ§", "Ãœretici duvar kaÄŸÄ±tlarÄ±"}, (d,n) -> {
+        popup(new AlertDialog.Builder(this).setTitle("Duvar kağıdı / Tema").setItems(new String[]{"Gece", "Okyanus", "Orman", "Dosya / USB'den resim seç", "Üretici duvar kağıtları"}, (d,n) -> {
             if (n == 4) vendor("WallPaperActivity", Settings.ACTION_SETTINGS);
             else if (n == 3) {
                 try { startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("image/*").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION), 10); }
-                catch (RuntimeException e) { toast("Bu cihazda resim seÃ§ici yok. Ãœretici duvar kaÄŸÄ±tlarÄ±nÄ± kullanÄ±n."); }
+                catch (RuntimeException e) { toast("Bu cihazda resim seçici yok. Üretici duvar kağıtlarını kullanın."); }
             } else { wallpaper = null; prefs.edit().remove("wallpaper").putInt("color", new int[]{BG,0xff081d2d,0xff0c211b}[n]).apply(); show(screen); }
         }).create());
     }
@@ -586,7 +586,7 @@ public final class MainActivity extends Activity {
         if (request == 10 && result == RESULT_OK && data != null && data.getData() != null) {
             Uri uri = data.getData();
             try { getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION); }
-            catch (SecurityException e) { Log.w(TAG, "Resim kalÄ±cÄ± eriÅŸim izni alÄ±namadÄ±", e); }
+            catch (SecurityException e) { Log.w(TAG, "Resim kalıcı erişim izni alınamadı", e); }
             wallpaper = null; prefs.edit().putString("wallpaper", uri.toString()).apply(); show(screen);
         }
     }
@@ -599,14 +599,14 @@ public final class MainActivity extends Activity {
                 o.inSampleSize = 1; while (o.outWidth/o.inSampleSize > 960 || o.outHeight/o.inSampleSize > 540) o.inSampleSize *= 2;
                 o.inJustDecodeBounds = false; o.inPreferredConfig = Bitmap.Config.RGB_565; Bitmap b;
                 try (InputStream in = getContentResolver().openInputStream(uri)) { b = BitmapFactory.decodeStream(in, null, o); }
-                if (b == null) throw new IllegalArgumentException("Resim Ã§Ã¶zÃ¼mlenemedi");
+                if (b == null) throw new IllegalArgumentException("Resim çözümlenemedi");
                 BitmapDrawable photo = new BitmapDrawable(getResources(), b); photo.setGravity(Gravity.FILL);
                 GradientDrawable shade = new GradientDrawable(); shade.setColor(0xa60b111c);
                 wallpaper = new LayerDrawable(new Drawable[]{photo, shade});
             }
             root.setBackground(wallpaper);
         } catch (Exception | OutOfMemoryError e) {
-            prefs.edit().remove("wallpaper").apply(); wallpaper = null; toast("Duvar kaÄŸÄ±dÄ± aÃ§Ä±lamadÄ±; koyu temaya dÃ¶nÃ¼ldÃ¼.");
+            prefs.edit().remove("wallpaper").apply(); wallpaper = null; toast("Duvar kağıdı açılamadı; koyu temaya dönüldü.");
         }
     }
     /** Whatever input the OEM last used (this board records HDMI2), so the box opens the real source. */
@@ -614,7 +614,7 @@ public final class MainActivity extends Activity {
         try {
             String recent = Settings.Global.getString(getContentResolver(), "input_source_recent_record");
             if (recent != null && recent.startsWith("HDMI")) return recent;
-        } catch (RuntimeException e) { Log.w(TAG, "GiriÅŸ kaynaÄŸÄ± okunamadÄ±", e); }
+        } catch (RuntimeException e) { Log.w(TAG, "Giriş kaynağı okunamadı", e); }
         return "HDMI2";
     }
     private void hdmi() {
@@ -626,20 +626,20 @@ public final class MainActivity extends Activity {
             Intent i = new Intent().setComponent(cn).putExtra("input_source", hdmiSource());
             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
             if (usable && launch(i)) return;
-            toast("GiriÅŸ ekranÄ± Ã¼reticiye Ã¶zel; Cihaz ayarlarÄ± aÃ§Ä±lÄ±yor.");
+            toast("Giriş ekranı üreticiye özel; Cihaz ayarları açılıyor.");
             vendor("settings.MainSettingActivity", Settings.ACTION_SETTINGS);
         } catch (PackageManager.NameNotFoundException e) {
-            toast("GiriÅŸ ekranÄ± bulunamadÄ±; Cihaz ayarlarÄ± aÃ§Ä±lÄ±yor.");
+            toast("Giriş ekranı bulunamadı; Cihaz ayarları açılıyor.");
             vendor("settings.MainSettingActivity", Settings.ACTION_SETTINGS);
         }
     }
-    /** Netflix'in uygulamasÄ± bu cihazda -13 veriyor (Widevine L1/keybox yok), web oynatÄ±cÄ± tek yol. */
+    /** Netflix'in uygulaması bu cihazda -13 veriyor (Widevine L1/keybox yok), web oynatıcı tek yol. */
     private void netflix() {
         Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.netflix.com/tv2"));
         i.setClassName("com.phlox.tvwebbrowser", "com.phlox.tvwebbrowser.activity.main.MainActivity");
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try { startActivity(i); }
-        catch (Exception e) { toast("TarayÄ±cÄ± yok; Netflix uygulamasÄ± denenecek."); openAny("com.netflix.ninja"); }
+        catch (Exception e) { toast("Tarayıcı yok; Netflix uygulaması denenecek."); openAny("com.netflix.ninja"); }
     }
     private void openAny(String... packages) {
         PackageManager pm = getPackageManager();
@@ -648,7 +648,7 @@ public final class MainActivity extends Activity {
             if (i == null) i = pm.getLaunchIntentForPackage(pkg);
             if (i != null && launch(i)) return;
         }
-        toast("Bu kÄ±sayol bu cihazda aÃ§Ä±lamÄ±yor.");
+        toast("Bu kısayol bu cihazda açılamıyor.");
     }
     private boolean component(String cls) {
         ComponentName cn = new ComponentName(VENDOR, VENDOR + ".activity." + cls);
@@ -662,14 +662,14 @@ public final class MainActivity extends Activity {
         Log.i(TAG, "route:" + cls);
         if (component(cls)) return;
         if (("SupportActivity".equals(cls) || "WallPaperActivity".equals(cls)) && component("MainActivity")) {
-            toast("Bu bÃ¶lÃ¼m Ã¼retici ana ekranÄ±na Ã¶zeldir. Destek / duvar kaÄŸÄ±dÄ± simgesini LuminaOS'tan seÃ§in."); return;
+            toast("Bu bölüm üretici ana ekranına özeldir. Destek / duvar kağıdı simgesini LuminaOS'tan seçin."); return;
         }
         if (!"settings.MainSettingActivity".equals(cls) && component("settings.MainSettingActivity")) {
-            toast("Ãœretici bu ekranÄ± dÄ±ÅŸa aÃ§mÄ±yor. Ä°lgili bÃ¶lÃ¼mÃ¼ Cihaz ayarlarÄ±ndan seÃ§in."); return;
+            toast("Üretici bu ekranı dışa açmıyor. İlgili bölümü Cihaz ayarlarından seçin."); return;
         }
         if (launch(new Intent(androidAction))) return;
         if (launch(new Intent().setComponent(new ComponentName("com.android.tv.settings", "com.android.tv.settings.MainSettings")))) return;
-        toast("Bu cihazda ilgili ayar ekranÄ± aÃ§Ä±lamadÄ±.");
+        toast("Bu cihazda ilgili ayar ekranı açılamadı.");
     }
     private boolean launch(Intent i) {
         try { i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); startActivity(i); Log.i(TAG, "launch:" + i.toUri(0)); return true; }
