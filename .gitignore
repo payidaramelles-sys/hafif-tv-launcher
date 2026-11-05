@@ -1,0 +1,12 @@
+# build çıktıları
+out/
+*.apk
+*.idsig
+
+# keystore
+keys/
+*.keystore
+
+# tersine mühendislik çalışma alanı
+re/
+!release/*.apk
