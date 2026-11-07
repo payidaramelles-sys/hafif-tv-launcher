@@ -213,3 +213,14 @@ JDK17: `C:\Program Files\Eclipse Adoptium\jdk-17.0.21.9-hotspot`; SDK `C:\Androi
 - Yardim metni kisaltildi. Gozlem: MENU tusu sistem tarafindan yutuluyor ve OEM MainSettingActivity aciliyor (uygulamanin onKeyUp'ina ulasmiyor).
 - APK 387.350 bayt, sha256 727F9E63573024F6C3A189CAD578590E23226BF7A1A812D20A0661524A4ECEE8.
 - Sicak olcum: PSS 24.723 KB, RSS 96.056 KB, Java heap 8.708 KB.
+## 2026-11-07 - Odak testi deseni (v4)
+- Sorun: projeksiyonun odagi manuel halka ile ayarlaniyor; kullanici kenar/orta netligini ve yazi puntolarini ayni anda degerlendirecek yerlesik referans istedi.
+- Cozum: Ayarlar > Projeksiyon ekranina "Odak testi (desen)" girdisi; tam ekran FocusView (uc desen), OK/sag-sol ile desen degisir, Geri projeksiyon ayarlarina doner.
+- Desen 1 odak yildizi: 36 kollu Siemens yildizi, dis halkalar, dort kose + dort kenar artisi, iki yanda 1-3 dp kalinlikta ince cizgi demetleri, kose etiketleri.
+- Desen 2 punto merdiveni: 30/24/19/15/12/9/7 punto Turkce satirlar; sag ustte 16/13/11/9/8 punto kenar ornekleri, sag altta 9/7 punto tekrar, solda ince yatay cizgi demeti.
+- Desen 3 izgara: 24 dp izgara, dama kenar seridi, dort kosede 1/2/3/5/8/12 dp aralikli dikey cizgi gruplari.
+- Hic gorsel varlik eklenmedi; hepsi Canvas ile vektorel. APK 395.544 bayt (onceki 391.446).
+- Surum: versionCode 2 / versionName 1.1. Imza ayni debug anahtari (SHA-256 D0:14:D7:D8:...68A55), bu yuzden adb install -r sorunsuz.
+- Dogrulama (adb 192.168.3.31:5555): Ayarlar > Projeksiyon > Odak testi acildi; uc desen ekran goruntusu alindi; Geri projeksiyon ekranina, tekrar Geri ana ekrana donuyor; logcat FATAL/ANR yok; varsayilan HOME hala org.mehmet.litetv.
+- sha256 135BAE87FA0CBCA3A0025B39F0E522C193EB09A14ADC9C720ADDF1A97BDA47ED.
+- Not: kaynak/repo hala gecici dizinde (C:\Users\mehme\AppData\Local\Temp\opencode\hafif-tv-repo); kalici bir yere tasinmali.

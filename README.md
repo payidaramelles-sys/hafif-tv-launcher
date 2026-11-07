@@ -25,6 +25,7 @@ Bunun yerine ihtiyaç duyulan şey küçük, öngörülebilir ve kumandayla tam 
 - **5 düzenlenebilir yuvarlak** — istediğin uygulamayı ata, uzun OK ile değiştir
 - **Kalem yuvarlağı** — "Alt sırayı düzenle" ekranı: 5 yuvarlağı tek tek değiştir veya temizle
 - **Ayarlar** — sağ üstte yuvarlak; cihaz ayarları, TV ayarları, ağ, bluetooth, uygulamalar, duvar kağıdı, projeksiyon, güç
+- **Odak testi** — Ayarlar → Projeksiyon içinde üç desenli tam ekran referans: odak yıldızı, punto merdiveni, ızgara/kenar çizgileri. Manuel odak halkasını ayarlamak için; OK ile desen değişir, Geri ile dönülür.
 - Uygulama çekmecesi: tüm LEANBACK/LAUNCHER uygulamaları, alfabetik (Türkçe sıralama), uzun OK ile favori
 
 ## Ölçümler

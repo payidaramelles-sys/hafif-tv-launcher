@@ -13,6 +13,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -106,7 +109,10 @@ public final class MainActivity extends Activity {
         // Re-query lightweight activity metadata to reflect installs/removals without a background service.
         if (grid != null) { loadApps(); refreshGrid(); }
     }
-    @Override public void onBackPressed() { if (!"home".equals(screen)) show("home"); }
+    @Override public void onBackPressed() {
+        if ("focus".equals(screen)) { show("projection"); return; }
+        if (!"home".equals(screen)) show("home");
+    }
     @Override public boolean onKeyUp(int code, KeyEvent event) {
         if (code == KeyEvent.KEYCODE_MENU) { show("settings"); return true; }
         return super.onKeyUp(code, event);
@@ -136,6 +142,7 @@ public final class MainActivity extends Activity {
     private void show(String target) {
         if (activeDialog != null) { activeDialog.dismiss(); activeDialog = null; }
         screen = target; grid = null; initialFocus = null;
+        if ("focus".equals(target)) { focusScreen(); return; }
         root = new LinearLayout(this); root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(dp(34), dp(22), dp(34), dp(16)); root.setBackgroundColor(prefs.getInt("color", BG));
         applyWallpaper();
@@ -541,6 +548,16 @@ public final class MainActivity extends Activity {
         row(new String[]{"Ekran ve Ses (TV)", "LuminaOS Projeksiyon"}, new Runnable[]{
             () -> displaySound(),
             () -> vendor("settings.MainSettingActivity", Settings.ACTION_DISPLAY_SETTINGS)});
+        content.addView(note("Odak halkası manuel. Deseni aç ve halkayı çevirerek sırayla üç şeyi kontrol et:\n1) Merkezdeki yıldızda gökkuşağı / dönen desen kaybolsun (merkez odak).\n2) Köşelerdeki ince çizgiler ve artılar keskin kalsın (kenar odak).\n3) Punto merdivenindeki en küçük satır okunabilsin (gerçek netlik).\nÜçü aynı anda olmuyorsa halkayı orta noktaya getir; desen bunu görmek için var."));
+        row(new String[]{"Odak testi (desen)", "Ayarlara dön"}, new Runnable[]{
+            () -> show("focus"), () -> show("settings")});
+    }
+    /** Üç desenli tam ekran odak referansı; OK ile desen, Geri ile projeksiyon ayarları. */
+    private void focusScreen() {
+        FocusView view = new FocusView(this);
+        setContentView(view);
+        view.requestFocus();
+        Log.i(TAG, "screen:focus");
     }
     private void power() {
         content.addView(note("Dikkat: üreticinin güç ekranı 15 saniye sonra otomatik kapatabilir.\nGeri ile çıkmak veya odağı kapanma kutusundan taşımak sayacı durdurur."));
@@ -717,5 +734,189 @@ public final class MainActivity extends Activity {
                 Log.i(TAG, "apk-diagnostics-complete");
             } catch (Exception e) { Log.w(TAG, "Own-process maps unavailable", e); }
         }, "apk-maps").start();
+    }
+
+    /**
+     * Tam ekran odak referansı. Projeksiyonun odak halkası manuel olduğu için üç desen var:
+     * 1) odak yıldızı ve köşe artıları, 2) punto merdiveni, 3) ızgara ve kenar çizgileri.
+     * Hiç görsel varlık kullanmaz; her şey Canvas ile vektörel çizilir, bu yüzden 1080p'de tam keskin.
+     */
+    private static final class FocusView extends View {
+        private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Path shape = new Path();
+        private final float density;
+        private int mode;
+
+        FocusView(Context context) {
+            super(context);
+            density = context.getResources().getDisplayMetrics().density;
+            setBackgroundColor(0xff000000);
+            setFocusable(true);
+            setFocusableInTouchMode(true);
+            setContentDescription("Odak testi deseni");
+        }
+
+        private float d(float value) { return value * density; }
+        private void white(float strokeWidth) {
+            p.setColor(0xffffffff); p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(d(strokeWidth));
+        }
+        private void solid() { p.setColor(0xffffffff); p.setStyle(Paint.Style.FILL); }
+
+        @Override protected void onDraw(Canvas canvas) {
+            int w = getWidth(), h = getHeight();
+            if (w < 2 || h < 2) return;
+            canvas.drawColor(0xff000000);
+            p.setTypeface(Typeface.SANS_SERIF);
+            if (mode == 1) wordPattern(canvas, w, h);
+            else if (mode == 2) gridPattern(canvas, w, h);
+            else starPattern(canvas, w, h);
+            footer(canvas, w, h);
+        }
+
+        private void footer(Canvas c, int w, int h) {
+            p.setStyle(Paint.Style.FILL); p.setColor(0xff000000);
+            c.drawRect(0, h - d(46), w, h, p);
+            p.setColor(0xff8fa3b8); p.setTextSize(d(11)); p.setTextAlign(Paint.Align.CENTER);
+            c.drawText("OK  Deseni değiştir      Geri  Projeksiyon ayarları      Desen " + (mode + 1) + "/3",
+                w / 2f, h - d(15), p);
+        }
+
+        private void cross(Canvas c, float x, float y, float arm, float width) {
+            white(width);
+            c.drawLine(x - arm, y, x + arm, y, p);
+            c.drawLine(x, y - arm, x, y + arm, p);
+        }
+
+        private void label(Canvas c, String value, float x, float y, Paint.Align align) {
+            p.setStyle(Paint.Style.FILL); p.setColor(0xffb9c8da);
+            p.setTextSize(d(10)); p.setTextAlign(align);
+            c.drawText(value, x, y + d(4), p);
+        }
+
+        /** Desen 1: ortada odak yıldızı; köşe/kenar artıları ve ince çizgi demetleri. */
+        private void starPattern(Canvas c, int w, int h) {
+            float bottom = h - d(46), cx = w / 2f, cy = bottom / 2f, r = Math.min(w, bottom) * 0.35f;
+            solid();
+            int spokes = 36;
+            shape.reset();
+            for (int i = 0; i < spokes; i += 2) {
+                double a = Math.PI * 2 * i / spokes, b = Math.PI * 2 * (i + 1) / spokes;
+                shape.moveTo(cx, cy);
+                shape.lineTo(cx + (float) Math.cos(a) * r, cy + (float) Math.sin(a) * r);
+                shape.lineTo(cx + (float) Math.cos(b) * r, cy + (float) Math.sin(b) * r);
+                shape.close();
+            }
+            c.drawPath(shape, p);
+            white(2); c.drawCircle(cx, cy, r * 1.06f, p);
+            white(1); c.drawCircle(cx, cy, r * 1.12f, p); c.drawCircle(cx, cy, r * 0.05f, p);
+            float m = d(38), arm = d(28);
+            float[] xs = {m, w - m, cx, cx, m, w - m};
+            float[] ys = {m, m, m, bottom - m, cy, cy};
+            for (int i = 0; i < xs.length; i++) cross(c, xs[i], ys[i], arm, 1.5f);
+            for (int i = 0; i < 5; i++) {
+                white(1 + i * 0.5f);
+                float x = d(18) + i * d(7);
+                c.drawLine(x, d(84), x, bottom - d(84), p);
+                c.drawLine(w - x, d(84), w - x, bottom - d(84), p);
+            }
+            label(c, "SOL ÜST", m + arm + d(10), m, Paint.Align.LEFT);
+            label(c, "SAĞ ÜST", w - m - arm - d(10), m, Paint.Align.RIGHT);
+            label(c, "SOL ALT", m + arm + d(10), bottom - m, Paint.Align.LEFT);
+            label(c, "SAĞ ALT", w - m - arm - d(10), bottom - m, Paint.Align.RIGHT);
+            white(2);
+            float f = d(12), len = d(46);
+            c.drawLine(f, f, f + len, f, p); c.drawLine(f, f, f, f + len, p);
+            c.drawLine(w - f - len, f, w - f, f, p); c.drawLine(w - f, f, w - f, f + len, p);
+            c.drawLine(f, bottom - f, f + len, bottom - f, p); c.drawLine(f, bottom - f, f, bottom - f - len, p);
+            c.drawLine(w - f - len, bottom - f, w - f, bottom - f, p); c.drawLine(w - f, bottom - f, w - f, bottom - f - len, p);
+        }
+
+        /** Desen 2: punto merdiveni; en küçük satırın okunması gerçek netliği gösterir. */
+        private void wordPattern(Canvas c, int w, int h) {
+            float bottom = h - d(46), x = d(56), top = d(58);
+            String[][] rows = {
+                {"30", "HAFİF TV ODAK TESTİ"},
+                {"24", "Türkçe: ı I i İ ş Ş ğ Ğ ü Ü ö Ö ç Ç"},
+                {"19", "Kenar ve orta aynı keskinlikte olmalı."},
+                {"15", "15 punto satır: harflerin içi açık mı?"},
+                {"12", "12 punto: küçük ayrıntılar seçilebiliyor mu?"},
+                {"9", "9 punto: ğüşiç ölçü 1 mm çizgi"},
+                {"7", "7 punto: bu satır yalnız odak doğruysa okunur"}};
+            float step = (bottom - d(74) - top) / (rows.length - 1);
+            p.setStyle(Paint.Style.FILL); p.setColor(0xffffffff); p.setTextAlign(Paint.Align.LEFT);
+            float y = top;
+            for (String[] row : rows) {
+                p.setTextSize(d(Integer.parseInt(row[0])));
+                c.drawText(row[1], x, y, p);
+                y += step;
+            }
+            float rx = w * 0.60f, ry = d(76);
+            p.setTextSize(d(9)); p.setColor(0xff8fa3b8);
+            c.drawText("SAĞ ÜST KÖŞE ÖRNEKLERİ", rx, ry, p);
+            ry += d(30);
+            int[] samples = {16, 13, 11, 9, 8};
+            for (int sample : samples) {
+                p.setColor(0xffffffff); p.setTextSize(d(sample));
+                c.drawText(sample + " punto · Hafif TV · ışık", rx, ry, p);
+                ry += d(sample * 1.9f + 14);
+            }
+            p.setColor(0xffffffff); p.setTextSize(d(9));
+            c.drawText("9 punto · sağ alt köşe", rx, bottom - d(62), p);
+            p.setTextSize(d(7));
+            c.drawText("7 punto · sağ alt köşe", rx, bottom - d(38), p);
+            white(1);
+            for (float gy = bottom - d(34); gy < bottom - d(8); gy += d(4)) c.drawLine(x, gy, w * 0.46f, gy, p);
+        }
+
+        /** Desen 3: ızgara, dama kenar şeridi ve köşe çizgi çiftleri. */
+        private void gridPattern(Canvas c, int w, int h) {
+            float bottom = h - d(46), step = d(24);
+            white(1);
+            for (float gx = step; gx < w; gx += step) c.drawLine(gx, 0, gx, bottom, p);
+            for (float gy = step; gy < bottom; gy += step) c.drawLine(0, gy, w, gy, p);
+            solid();
+            float box = d(16);
+            for (float gx = 0; gx < w; gx += box * 2) {
+                c.drawRect(gx, 0, gx + box, box, p);
+                c.drawRect(gx, bottom - box, gx + box, bottom, p);
+            }
+            for (float gy = 0; gy < bottom; gy += box * 2) {
+                c.drawRect(0, gy, box, gy + box, p);
+                c.drawRect(w - box, gy, w, gy + box, p);
+            }
+            float[][] corners = {{d(32), d(104)}, {w - d(32) - d(60), d(104)},
+                {d(32), bottom - d(104) - d(56)}, {w - d(32) - d(60), bottom - d(104) - d(56)}};
+            float[] gaps = {d(1), d(2), d(3), d(5), d(8), d(12)};
+            for (float[] corner : corners) {
+                float px = corner[0];
+                for (int i = 0; i < gaps.length; i++) {
+                    white(i < 3 ? 1 : 1.5f);
+                    c.drawLine(px, corner[1], px, corner[1] + d(56), p);
+                    px += gaps[i];
+                }
+            }
+            p.setStyle(Paint.Style.FILL); p.setColor(0xff000000); p.setTextSize(d(22));
+            p.setTextAlign(Paint.Align.CENTER);
+            float tw = p.measureText("IZGARA · KENAR NETLİĞİ");
+            c.drawRect(w / 2f - tw / 2 - d(16), bottom / 2f - d(32), w / 2f + tw / 2 + d(16), bottom / 2f + d(14), p);
+            p.setColor(0xffffffff);
+            c.drawText("IZGARA · KENAR NETLİĞİ", w / 2f, bottom / 2f, p);
+        }
+
+        @Override public boolean onKeyDown(int keyCode, KeyEvent event) {
+            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
+                || keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER) return true;
+            return super.onKeyDown(keyCode, event);
+        }
+
+        @Override public boolean onKeyUp(int keyCode, KeyEvent event) {
+            if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT || keyCode == KeyEvent.KEYCODE_DPAD_CENTER
+                || keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_SPACE
+                || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE || keyCode == KeyEvent.KEYCODE_BUTTON_A) {
+                mode = (mode + 1) % 3; invalidate(); return true;
+            }
+            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) { mode = (mode + 2) % 3; invalidate(); return true; }
+            return super.onKeyUp(keyCode, event);
+        }
     }
 }
