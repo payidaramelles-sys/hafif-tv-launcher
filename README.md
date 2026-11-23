@@ -1,71 +1,77 @@
 # Hafif TV
 
-950 MB RAM'li bir Android TV projeksiyon cihazı için yazılmış, **tek Activity'li, sıfır bağımlılıklı** ana ekran (launcher).
+**English** · [Türkçe](README.tr.md)
 
-Cihazın stok arayüzü (LuminaOS) 60 MB PSS kullanıp 1,2 saniyede açılıyordu. Bu launcher aynı işi **30 MB PSS** ve **0,63 saniyede** yapıyor — üstelik daha az yer kaplıyor: 31,6 MB yerine 382 KB.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Android%20TV%20(SDK%2034)-3DDC84.svg)](#build)
+[![APK Size](https://img.shields.io/badge/APK-382%20KB-blue.svg)](release/LiteTV-signed.apk)
 
-![Ana ekran](docs/home.png)
+A **single-Activity, zero-dependency** home launcher written for low-memory (950 MB RAM) Android TV projectors.
 
-## Neden yazıldı
+The stock OEM launcher (LuminaOS) used 60 MB PSS and took 1.2 seconds to cold-start. Hafif TV does the same job in **30 MB PSS** and **0.63 seconds**, while shrinking the APK from 31.6 MB down to **382 KB**.
 
-Cihaz: ADT-3 (Askey), Allwinner `sun50iw15p1`, Android 14 (SDK 34), **951 MB RAM**, 1920x1080 @320dpi, yalnız `armeabi-v7a`, root yok (`ro.secure=1`).
+![Home screen](docs/home.png)
 
-Bu sınıf cihazlarda OEM launcher'ı:
+## Why it exists
 
-- onlarca servisi ve reklam/telemetri kütüphanesini birlikte başlatıyor,
-- uygulama ikonlarını her açılışta paket yöneticisinden yeniden çözüyor,
-- kullanıcının ihtiyacı olmayan 8 ayrı ayar ekranını ana ekrana gömüyor.
+Target device: ADT-3 (Askey), Allwinner `sun50iw15p1`, Android 14 (SDK 34), **951 MB RAM**, 1920x1080 @320dpi, `armeabi-v7a` only, non-rooted (`ro.secure=1`).
 
-Bunun yerine ihtiyaç duyulan şey küçük, öngörülebilir ve kumandayla tam çalışan bir menü.
+On this class of hardware, stock OEM launchers typically:
 
-## Ne yapar
+- start dozens of background services and ad/telemetry SDKs at boot,
+- re-resolve app icons from `PackageManager` on every launch,
+- embed redundant settings screens directly into the home UI.
 
-- **3 büyük kart** — Giriş/HDMI, Kablosuz Ekran, Dosyalar
-- **4 hızlı uygulama kutusu** — Netflix (tarayıcıda), Prime Video, HBO Max, YouTube
-- **5 düzenlenebilir yuvarlak** — istediğin uygulamayı ata, uzun OK ile değiştir
-- **Kalem yuvarlağı** — "Alt sırayı düzenle" ekranı: 5 yuvarlağı tek tek değiştir veya temizle
-- **Ayarlar** — sağ üstte yuvarlak; cihaz ayarları, TV ayarları, ağ, bluetooth, uygulamalar, duvar kağıdı, projeksiyon, güç
-- **Odak testi** — Ayarlar → Projeksiyon içinde üç desenli tam ekran referans: odak yıldızı, punto merdiveni, ızgara/kenar çizgileri. Manuel odak halkasını ayarlamak için; OK ile desen değişir, Geri ile dönülür.
-- Uygulama çekmecesi: tüm LEANBACK/LAUNCHER uygulamaları, alfabetik (Türkçe sıralama), uzun OK ile favori
+What these devices actually need is a small, predictable, D-pad-friendly launcher.
 
-## Ölçümler
+## What it does
 
-Aynı cihazda, 3 kez soğuk başlatma, medyan:
+- **3 large cards** — Input/HDMI, Wireless Display, Files
+- **4 quick-launch tiles** — Netflix (browser), Prime Video, HBO Max, YouTube
+- **5 customizable circles** — assign any installed app, long-press OK to change
+- **Edit button** — dedicated "Edit bottom row" view to reassign or clear each slot
+- **Settings** — top-right quick button for device settings, TV settings, network, Bluetooth, apps, wallpaper, projection, and power
+- **Focus test** — built into Settings → Projection: 3 full-screen calibration patterns (focus star, font-size ladder, alignment grid) for tuning a manual projector focus ring (OK cycles patterns, Back exits)
+- **App drawer** — all `LEANBACK`/`LAUNCHER` apps sorted alphabetically, long-press OK to pin
 
-| | LuminaOS (stok) | Hafif TV |
-|---|---|---|
-| PSS | 60,2 MB | **30,0 MB** |
-| RSS | 134,1 MB | **98,6 MB** |
-| Soğuk açılış | 1207 ms | **629 ms** |
-| APK boyutu | 31,6 MB | **382 KB** |
-| Java + native | 35,3 MB | **17,8 MB** |
+## Benchmarks
 
-Not: soğuk açılış "process cold" — uygulama süreci öldürülüp yeniden başlatılarak ölçüldü, cihaz reseti değil.
+Measured on the same device across 3 cold starts (median):
 
-## Neden bu kadar küçük
+| Metric | LuminaOS (stock) | Hafif TV |
+|---|---:|---:|
+| PSS | 60.2 MB | **30.0 MB** |
+| RSS | 134.1 MB | **98.6 MB** |
+| Cold start | 1207 ms | **629 ms** |
+| APK size | 31.6 MB | **382 KB** |
+| Java + native | 35.3 MB | **17.8 MB** |
 
-- **Tek Activity**, tek layout, sıfır kütüphane (AndroidX yok, RecyclerView yok, Compose yok).
-- **Simge rasterleme yok**: büyük APK'lardan (SystemUI, TvSettings, 30 MB'lık OEM uygulaması) ikon çekmek 32 MB kaynak haritalamasına yol açıyordu. Bunun yerine bu ikonlar cihazda bir kez 256x256 PNG olarak alınıp pakete gömüldü — toplam ~450 KB.
-- **Grafikler kodla çiziliyor** (`Canvas`/`Path`): HDMI, yansıtma, klasör, ızgara, kaydırıcı, artı, kalem ikonları tek tek çizildi; hiçbir varlık dosyası yok.
-- **Animasyon yok**, paylaşılan öğe geçişi yok, arka planda servis yok, izin yok, telemetri yok.
+*Note: "Cold start" means killing the app process and relaunching it, not a full device reboot.*
 
-## Derleme
+## Why it is so small
 
-Gereksinimler:
+- **Single Activity**, single layout, zero third-party libraries (no AndroidX, no RecyclerView, no Jetpack Compose).
+- **No runtime icon rasterization**: pulling icons from large system APKs (SystemUI, TvSettings, 30 MB OEM launcher) caused ~32 MB of resource mapping overhead. Instead, those icons were extracted once as 256x256 PNGs and bundled (~450 KB total).
+- **Procedural vector graphics** (`Canvas`/`Path`): HDMI, cast, folder, grid, slider, plus, and edit icons are drawn directly in code.
+- **No animations**, no shared-element transitions, no background services, no extra permissions, no telemetry.
+
+## Build
+
+Requirements:
 
 - JDK 17
 - Android SDK: `platforms;android-34` + `build-tools;34.0.0`
 - PowerShell
 
 ```powershell
-# AndroidManifest.xml, res/ ve src/ aynı dizinde
+# AndroidManifest.xml, res/ and src/ in the same directory
 ./build.ps1
-# çıktı: out/LiteTV-signed.apk
+# output: out/LiteTV-signed.apk
 ```
 
-`build.ps1` sırasıyla `aapt2` → `javac` → `d8` → `zipalign` → `apksigner` çağırır; Gradle kullanmaz.
+`build.ps1` invokes `aapt2` → `javac` → `d8` → `zipalign` → `apksigner` directly — no Gradle required.
 
-İlk derlemeden önce bir debug keystore üret:
+Before the first build, generate a debug keystore:
 
 ```powershell
 keytool -genkeypair -keystore keys/debug.keystore -alias androiddebugkey `
@@ -73,34 +79,34 @@ keytool -genkeypair -keystore keys/debug.keystore -alias androiddebugkey `
   -dname "CN=Android Debug,O=Android,C=US"
 ```
 
-## Kurulum
+## Install
 
 ```bash
 adb install -r out/LiteTV-signed.apk
 adb shell cmd package set-home-activity org.mehmet.litetv/.MainActivity
 ```
 
-Geri dönmek için:
+To revert to the stock launcher:
 
 ```bash
-adb shell cmd package set-home-activity <stok-launcher>/.<AnaActivity>
+adb shell cmd package set-home-activity <stock-launcher>/.<MainActivity>
 ```
 
-## Bilinen sınırlar
+## Known limits (honest scope)
 
-Bu bir **kullanıcı arayüzü** projesidir; stok sistem uygulamasının yerini tamamen alamaz:
+This is a **user-space UI** project; it cannot replace privileged system apps:
 
-- **Sistem imzası gerektiren ekranlar** (projeksiyon keystone, görüntü modu, güç yönetimi) OEM uygulamasının içinde `android.uid.system` ile çalışır. Normal bir APK bunları açamaz; bu yüzden o kartlar OEM'in kendi ayar ızgarasına yönlendirir. Sahte slider/switch konmadı.
-- **Widevine L3**: cihazda L1 keybox yok; Netflix gibi uygulamalar "cihaz desteklenmiyor" diyebilir.
-- **HDMI** kaynağı `awlivetv` bileşeniyle değiştirilir; kaynak boşsa siyah ekran görülür, HOME tuşu geri döndürür.
-- Gömülü uygulama ikonları cihazdan alınmış anlık görüntülerdir; uygulama güncellenince eski ikon görünebilir.
+- **System-signed screens** (keystone correction, picture mode, power management) run under `android.uid.system` inside the OEM app. A regular APK cannot control them directly, so those tiles open the OEM's own settings grid. No fake sliders or toggles.
+- **Widevine L3**: if the hardware lacks an L1 keybox, DRM-protected apps like Netflix may report the device as unsupported.
+- **HDMI input** switches via the `awlivetv` component; if no signal is present, the screen stays black until you press HOME.
+- Bundled app icons are static snapshots from the target device and may not reflect future icon updates.
 
-## Sorumluluk reddi
+## Disclaimer
 
-Bu yazılım **olduğu gibi** sunulmuştur. Cihazınızda oluşabilecek her türlü sonuç — veri kaybı, açılmayan cihaz, garanti kaybı, ayarların bozulması, üçüncü taraf uygulamaların çalışmaması — kullanıcının sorumluluğundadır. Geliştirici hiçbir sorumluluk kabul etmez. Yüklemeden önce stok launcher'ı geri yükleme yolunuzu bildiğinizden emin olun.
+This software is provided **"as is"**. Any outcome on your device — including data loss, boot issues, voided warranty, or broken third-party apps — is the user's responsibility. Make sure you know how to restore your stock launcher via ADB before installing.
 
-Bu proje hiçbir üreticiyle bağlantılı değildir; marka adları yalnızca tanımlama amacıyla geçer.
+Not affiliated with any hardware manufacturer; brand names are used strictly for identification.
 
-## Lisans
+## License
 
-MIT — bkz. [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
